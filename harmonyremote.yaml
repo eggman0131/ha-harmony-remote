@@ -1,0 +1,275 @@
+# Include this file in the cards: section of a lovelace view.
+# Harmony Remote Control
+
+# Vertical-stack-in-card makes a 'dynamic' remote control where the buttons change according to the activity
+- type: custom:vertical-stack-in-card
+  title: Lounge Entertainment
+  cards:
+
+  # Set Harmony Activity, this section always shows
+  # Harmony Activities are configured as template switches
+  - type: picture-elements
+    image: /local/images/short-empty.png?v2.2
+    elements:
+      - type: image
+        entity: switch.lounge_tv
+        tap_action: 
+          action: toggle
+        image: /local/images/remote/tv.svg?v1
+        state_filter: 
+          "on": invert(.5) sepia(1) saturate(8) hue-rotate(10deg)
+        style:
+          top: 50%
+          left: 20%
+          # Reuse these values with <<: *style_anchor in the style section for each button
+          <<: &style_anchor 
+            width: 2em
+            height: 2em
+            padding: 15px
+            background-color: var(--paper-item-icon-color)
+            border-radius: 50%
+            box-shadow: 0 3px 5px -1px rgba(0,0,0,.2), 0 6px 10px 0 rgba(0,0,0,.14), 0 1px 18px 0 rgba(0,0,0,.12)
+      - type: image
+        entity: switch.soundbar
+        tap_action: 
+          action: toggle
+        image: /local/images/remote/music.svg?v1
+        state_filter: 
+          "on": invert(.5) sepia(1) saturate(8) hue-rotate(10deg)
+        style: 
+          <<: *style_anchor
+          top: 50%
+          left: 50%    
+      - type: image
+        entity: switch.ps3
+        tap_action: 
+          action: toggle
+        image: /local/images/remote/ps4.svg?v1
+        state_filter: 
+          "on": invert(.5) sepia(1) saturate(8) hue-rotate(10deg)
+        style: 
+          <<: *style_anchor
+          top: 50%
+          left: 80%
+
+  # Display full remote when Harmony's TV Activity is on
+  # Commands sent straight to Harmony with remote.send_command
+  # Info, such as the Device ID come from config/harmony_XXXX.conf 
+  - type: conditional
+    conditions:
+    - entity: switch.lounge_tv
+      state: "on"
+    card:
+      type: picture-elements
+      image: /local/images/empty.png?v2.4
+      elements: 
+      - type: image  # Menu
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: SmartHub
+        image: /local/images/remote/menu.svg?v1
+        style: 
+          <<: *style_anchor
+          top: 15%
+          left: 20%
+      - type: image  # Exit
+        entity: media_player.lounge_chromecast
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: Exit
+        image: /local/images/remote/cast.svg?v1 # using a cast image as exit only gets used to quit apps an watch cast content
+        state_filter: # light up the button when chromecast is playing (as a nudge if the TV's sitting in an app)
+          playing: invert(.5) sepia(1) saturate(8) hue-rotate(10deg)
+          paused: invert(.5) sepia(1) saturate(8) hue-rotate(10deg)
+        style:
+          <<: *style_anchor
+          top: 15%
+          left: 50%
+      - type: image  # Back
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: Return
+        image: /local/images/remote/back.svg?v1
+        style:
+          <<: *style_anchor
+          top: 15%
+          left: 80%
+      - type: image  # Up
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: DirectionUp
+        image: /local/images/remote/up.svg?v1
+        style:
+          <<: *style_anchor
+          top: 44%
+          left: 50%
+      - type: image  # Left
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: DirectionLeft
+        image: /local/images/remote/left.svg?v1
+        style:
+          <<: *style_anchor
+          top: 65%
+          left: 32%
+      - type: image  # OK
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: Select
+        image: /local/images/remote/return.svg?v1
+        style:
+          <<: *style_anchor
+          top: 65%
+          left: 50%
+      - type: image  # Right
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: DirectionRight
+        image: /local/images/remote/right.svg?v1
+        style:
+          <<: *style_anchor
+          top: 65%
+          left: 68%
+      - type: image  # Down
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: DirectionDown
+        image: /local/images/remote/down.svg?v1
+        style:
+          <<: *style_anchor
+          top: 86%
+          left: 50%
+  
+  # Display Play / Pause / Stop when TV or Soundbar is active
+  # These set the value of an input_text field which triggers a node-red flow which either:
+  #  - sends harmony remote commands if watching TV app (TV is on / chromecast inactive)
+  #  - controls chromecast if casting to it (TV is on / chromecast active)
+  #  - controls google home if listening to music (TV is off / speaker is on)
+  - type: conditional
+    conditions:
+    - entity: remote.lounge
+      state: "on"
+    - entity: switch.ps3
+      state: "off"
+    card:
+      type: picture-elements
+      image: /local/images/short-empty.png?v2.1
+      elements: 
+      - type: image  # Play
+        tap_action:
+          action: call-service
+          service: input_text.set_value
+          service_data:
+            entity_id: input_text.remote_command
+            value: play
+        image: /local/images/remote/play.svg?v1
+        style:
+          <<: *style_anchor
+          top: 50%
+          left: 20%
+      - type: image  # Pause
+        tap_action:
+          action: call-service
+          service: input_text.set_value
+          service_data:
+            entity_id: input_text.remote_command
+            value: pause
+        image: /local/images/remote/pause.svg?v1
+        style:
+          <<: *style_anchor
+          top: 50%
+          left: 50%
+      - type: image  # Stop
+        entity: input_boolean.remote_stop
+        tap_action:
+          action: call-service
+          service: input_text.set_value
+          service_data:
+            entity_id: input_text.remote_command
+            value: stop
+        image: /local/images/remote/stop.svg?v1
+        style:
+          <<: *style_anchor
+          top: 50%
+          left: 80% 
+
+  # Display volume controls when any Activity is on
+  - type: conditional
+    conditions:
+    - entity: remote.lounge
+      state: "on"
+    card:
+      type: picture-elements
+      image: /local/images/short-empty.png?v2.1
+      elements: 
+      - type: image  # Volume Up
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: VolumeUp
+        image: /local/images/remote/volup.svg?v1
+        style:
+          <<: *style_anchor
+          top: 40%
+          left: 80%
+      - type: image  # Mute
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: Mute
+        image: /local/images/remote/mute.svg?v1
+        style:
+          <<: *style_anchor
+          top: 40%
+          left: 50%
+      - type: image  # Volume Down
+        tap_action:
+          action: call-service
+          service: remote.send_command
+          service_data:
+            entity_id: remote.lounge
+            device: 29590173
+            command: VolumeDown
+        image: /local/images/remote/voldown.svg?v1
+        style:
+          <<: *style_anchor
+          top: 40%
+          left: 20%
