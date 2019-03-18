@@ -1,0 +1,64 @@
+# include this file from configuration.yaml
+# switch: !include switch.yaml
+
+- platform: template
+    switches:
+        lounge_tv:
+          friendly_name: Lounge TV
+          value_template: "{{ is_state_attr('remote.lounge', 'current_activity', 'TV') }}"
+          turn_on:
+            service: remote.turn_on
+            data:
+              entity_id: remote.lounge
+              activity: 'TV'
+          turn_off:
+            service: remote.turn_on
+            data:
+              entity_id: remote.lounge
+              activity: 'PowerOff'
+          icon_template: >-
+            {% if is_state_attr('remote.lounge', 'current_activity', 'TV') %}
+              mdi:television-classic
+            {% else %}
+              mdi:television-classic-off
+            {% endif %}
+
+        soundbar:
+          friendly_name: Soundbar
+          value_template: "{{ is_state_attr('remote.lounge', 'current_activity', 'Soundbar') }}"
+          turn_on:
+            service: remote.turn_on
+            data:
+              entity_id: remote.lounge
+              activity: 'Soundbar'
+          turn_off:
+            service: remote.turn_on
+            data:
+              entity_id: remote.lounge
+              activity: 'PowerOff'
+          icon_template: >-
+            {% if is_state_attr('remote.lounge', 'current_activity', 'Soundbar') %}
+              mdi:music
+            {% else %}
+              mdi:music-off
+            {% endif %}
+
+        ps3:
+          friendly_name: PS4
+          value_template: "{{ is_state_attr('remote.lounge', 'current_activity', 'PS4') }}"
+          turn_on:
+            service: remote.turn_on
+            data:
+              entity_id: remote.lounge
+              activity: 'PS4'
+          turn_off:
+            service: remote.turn_on
+            data:
+              entity_id: remote.lounge
+              activity: 'PowerOff'
+          icon_template: >-
+            {% if is_state_attr('remote.lounge', 'current_activity', 'PS4') %}
+              mdi:playstation
+            {% else %}
+              mdi:playstation
+            {% endif %}
